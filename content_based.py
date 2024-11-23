@@ -1,46 +1,20 @@
 import pandas as pd
-import json
 import ast
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
-def clean_and_parse_json(json_str):
-    # Replace single quotes with double quotes to make it valid JSON
-    json_str = json_str.replace("'", "\"")
-    return json.loads(json_str)
 
 # Load data
 movies_metadata = pd.read_csv('archive/movies_metadata.csv')
 keywords = pd.read_csv('archive/keywords.csv')
 credits = pd.read_csv('archive/credits.csv')
-# links = pd.read_csv('archive/links.csv').dropna()
-# ratings = pd.read_csv('archive/ratings_small.csv').dropna()
-
-# Take a look
-# print(movies_metadata['id'].head())
-# print(keywords.head())
-# print(credits.head())
-
-# print(movies_metadata[movies_metadata['id'] == '862'])
-
 
 # Ensure 'id' columns are in the same format (string type works well for merging)
 movies_metadata['id'] = movies_metadata['id'].astype(str)
 keywords['id'] = keywords['id'].astype(str)
 credits['id'] = credits['id'].astype(str)
 
-# print(movies_metadata[movies_metadata['id'] == '862'])
-# print('keywords')
-# print(keywords[keywords['id'] == '862'])
-# print()
-# print(credits[credits['id'] == '862'])
-
 # dataframe
 mkc_merge = movies_metadata.merge(keywords, on='id').merge(credits, on='id')
-# if '862' in mkc_merge['id'].values:
-#     print("Yes")
-# else:
-#     print("No")
 
 print(mkc_merge.head())
 print(len(mkc_merge))
@@ -92,13 +66,6 @@ tfidf_matrix = tfidf.fit_transform(mkc_merge['content_profile'])
 # Measures how similar two vectors are, based on their direction. A higher score means two movies share more similar content.
 cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
-# print(mkc_merge['title'].values)
-# print(mkc_merge.columns) 
-# if '862' in keywords['id'].values:
-#     print("Yes")
-# else:
-#     print("No")
-
 def get_recommendations(title, cosine_sim=cosine_sim):
     # Check if the movie exists
     if title not in mkc_merge['title'].values:
@@ -112,41 +79,5 @@ def get_recommendations(title, cosine_sim=cosine_sim):
     movie_indices = [i[0] for i in sim_scores]
     return mkc_merge['title'].iloc[movie_indices]
 
-print(get_recommendations('Toy Story'))
-
-
-# print(links.head())
-# print(ratings.head())
-
-# Function to safely parse JSON or handle already-parsed lists
-# Function to handle parsing
-# def parse_keywords(x):
-#     # Check if entry is empty or null
-#     if not x or x == "[]":
-#         return ''
-#     # Replace single quotes with double quotes for valid JSON format
-#     if isinstance(x, str):
-#         x = x.replace("'", "\"")
-#     try:
-#         # Attempt to parse JSON
-#         data = json.loads(x)
-#         # Join the 'name' field of each dictionary entry
-#         return ' '.join([i['name'] for i in data])
-#     except json.JSONDecodeError:
-#         # Fall back to literal_eval for non-standard JSON format
-#         try:
-#             data = literal_eval(x)
-#             return ' '.join([i['name'] for i in data])
-#         except (ValueError, SyntaxError):
-#             return ''  # Return empty if parsing still fails
-
-# # Apply the function to the 'keywords' column
-# keywords['keywords'] = keywords['keywords'].apply(parse_keywords)
-
-# # Example: Parse keywords JSON column
-# keywords['keywords'] = keywords['keywords'].apply(lambda x: ' '.join([i['name'] for i in json.loads(x)]))
-# # credits['cast'] = credits['cast'].apply(lambda x: ' '.join([i['name'] for i in json.loads(x)[:3]])) # Top 3 cast
-# # credits['crew'] = credits['crew'].apply(lambda x: ' '.join([i['name'] for i in json.loads(x) if i['job'] == 'Director']))
-
-
-# print(keywords['keywords'])
+movie = input('Please input a movie name for a recommendation: ')
+print(get_recommendations(movie))
