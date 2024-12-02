@@ -8,8 +8,8 @@ from sklearn.metrics import mean_squared_error
 from collaborativeFiltering import precisionAtK, recallAtK, f1ScoreAtK, meanAveragePrecision
 
 def load_data():
-    ratings = pd.read_csv("/Users/conneigh8/Documents/CPSC483_FALL2024/CPSC483_Project/MovieLens20M/rating.csv")
-    movies = pd.read_csv("/Users/conneigh8/Documents/CPSC483_FALL2024/CPSC483_Project/MovieLens20M/movie.csv")
+    ratings = pd.read_csv("rating.csv")
+    movies = pd.read_csv("movie.csv")
 
     return ratings, movies
 
@@ -57,7 +57,7 @@ def collaborative_filtering(ratings, user_id, user_ratings, n_recommendations=5,
     knn.fit(user_movie_matrix)
     if user_id not in user_movie_matrix.index:
         return None  # User not in training data
-    indices = knn.kneighbors([user_movie_matrix.loc[user_id]], n_neighbors=n_neighbors)
+    distances, indices = knn.kneighbors([user_movie_matrix.loc[user_id]], n_neighbors=n_neighbors)
     similar_users = indices.flatten()[1:]
     similar_ratings = user_movie_matrix.iloc[similar_users].mean(axis=0)
     unrated_movies = user_movie_matrix.loc[user_id] == 0

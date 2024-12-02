@@ -9,10 +9,10 @@ Original file is located at
 
 from collaborativeFiltering import filteringRecommender
 from hybrid import hybrid_recommender, evaluate_hybrid_recommender, load_data
-from content_Based import contentFilteringRecommender
+from content_based import contentFilteringRecommender
 
 def runRecommendation(choice):
-     if choice == 1:
+    if (choice == 1):
         print("Enter your favorite movie title: ", end=' ')
         movie_title = input()
         contentFilteringRecommender(movie_title)
@@ -29,11 +29,14 @@ def runRecommendation(choice):
         evaluate_hybrid_recommender(userId, hybrid_recommender, ratings, n_recommendations=10)
 
 if __name__ == "__main__":
-    print("How would you like to generate movies?")
-    print("     1. Find similar movies to your favorite")
-    print("     2. Movies tailored to you")
-    print("     3. Hybrid approach")
-    print("Enter your choice: ", end=' ')
-    choice = int(input())
-    runRecommendation(choice)
-    print()
+    choice = 1
+    while choice == 1 or choice == 2 or choice == 3:
+        print("How would you like to generate movies?")
+        print("     1. Find similar movies to your favorite")
+        print("     2. Movies tailored to you")
+        print("     3. Hybrid approach")
+        print("Enter your choice (to terminate enter 0): ", end=' ')
+        choice = int(input())
+        runRecommendation(choice)
+        print()
+        print("Thank you for using our movie recommender!")
