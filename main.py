@@ -9,8 +9,13 @@ Original file is located at
 
 from collaborativeFiltering import filteringRecommender
 from hybrid import hybrid_recommender, evaluate_hybrid_recommender, load_data
+from content_Based import contentFilteringRecommender
 
 def runRecommendation(choice):
+     if choice == 1:
+        print("Enter your favorite movie title: ", end=' ')
+        movie_title = input()
+        contentFilteringRecommender(movie_title)
     if (choice == 2):
         print("Enter your userId: ", end=' ')
         userId = int(input())
