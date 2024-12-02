@@ -1,83 +1,101 @@
 import pandas as pd
-import ast
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import mean_squared_error
 
-# Load data
-movies_metadata = pd.read_csv('archive/movies_metadata.csv')
-keywords = pd.read_csv('archive/keywords.csv')
-credits = pd.read_csv('archive/credits.csv')
+def load_data():
+    # Load the dataset
+    movie_data = pd.read_csv("movie.csv")
 
-# Ensure 'id' columns are in the same format (string type works well for merging)
-movies_metadata['id'] = movies_metadata['id'].astype(str)
-keywords['id'] = keywords['id'].astype(str)
-credits['id'] = credits['id'].astype(str)
+    # Combine relevant features for TF-IDF
+    movie_data["combined_features"] = (
+        movie_data["genres"].fillna("") + " " + movie_data["title"].fillna("")
+    )
+    return movie_data
 
-# dataframe
-mkc_merge = movies_metadata.merge(keywords, on='id').merge(credits, on='id')
+def train_model(movie_data):
+    # Create a TF-IDF matrix for combined features
+    tfidf = TfidfVectorizer(stop_words="english")
+    feature_matrix = tfidf.fit_transform(movie_data["combined_features"])
 
-print(mkc_merge.head())
-print(len(mkc_merge))
+    # Calculate the cosine similarity matrix
+    similarity_matrix = cosine_similarity(feature_matrix)
+    return similarity_matrix
 
-# Function to parse JSON-like strings
-def parse_features(x):
-    try:
-        return [i['name'] for i in ast.literal_eval(x)] # i is dictionary name
-    except:
-        return []
+def filteringRecommender(movie_title, n_recommendations=10):
+    movie_data = load_data()
+    similarity_matrix = train_model(movie_data)
 
-# Extract keywords
-mkc_merge['keywords'] = mkc_merge['keywords'].apply(parse_features)
-# Extract top 3 cast members for simplicity
-mkc_merge['cast'] = mkc_merge['cast'].apply(lambda x: parse_features(x)[:3]) # lambda used to extract only 3
+    # Ensure the movie exists in the dataset
+    movie_indices = movie_data[movie_data["title"].str.contains(movie_title, case=False)].index
+    if len(movie_indices) == 0:
+        return f"Movie '{movie_title}' not found."
 
-# Extract directors from crew
-def get_directors(x):
-    try:
-        crew = ast.literal_eval(x)
-        return [i['name'] for i in crew if i['job'] == 'Director']
-    except:
-        return []
-mkc_merge['crew'] = mkc_merge['crew'].apply(get_directors)
+    # Reference movie and similarity scores
+    movie_index = movie_indices[0]
+    reference_movie = movie_data.iloc[movie_index]
+    similarity_scores = list(enumerate(similarity_matrix[movie_index]))
 
-# Extract genres
-mkc_merge['genres'] = mkc_merge['genres'].apply(parse_features)
+    # Get top N recommendations
+    similar_movies = sorted(similarity_scores, key=lambda x: x[1], reverse=True)[1:n_recommendations + 1]
+    recommended_indices = [x[0] for x in similar_movies]
+    similarity_values = [x[1] for x in similar_movies]
 
-# Combine all text features into a single string
-def combine_features(row):
-    return ' '.join(row['overview'] if pd.notnull(row['overview']) else '') + ' ' + \
-           ' '.join(row['keywords']) + ' ' + \
-           ' '.join(row['cast']) + ' ' + \
-           ' '.join(row['crew']) + ' ' + \
-           ' '.join(row['genres'])
+    # Extract movie details
+    recommended_movies = movie_data.iloc[recommended_indices].copy()
+    recommended_movies["similarity_score"] = similarity_values
 
-# Apply the function to create a 'content_profile' column
-mkc_merge['content_profile'] = mkc_merge.apply(combine_features, axis=1) # column only, stored in column
+    # Display recommendations
+    print(f"\nTop {n_recommendations} Movies Similar to '{reference_movie['title']}':\n")
+    for rank, (_, row) in enumerate(recommended_movies.iterrows(), 1):
+        print(f"{rank:4d} | {row['title']:40s} | {row['genres']:20s} | {row['similarity_score']:.4f}")
 
-# How it Works:
-# Term Frequency (TF): Measures how frequently a word appears in a document.
-# Inverse Document Frequency (IDF): Measures how rare a word is across the corpus.
-# TF-IDF: The product of TF and IDF gives the final score for a word in a document. A high TF-IDF score means the word is important to that document.
-tfidf = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf.fit_transform(mkc_merge['content_profile'])
-# print(tfidf_matrix)
+    # Evaluate recommendations
+    evaluate_metrics(recommended_movies, reference_movie, movie_data, similarity_values, n_recommendations)
 
-# Function to get movie recommendations based on cosine similarity
-# Measures how similar two vectors are, based on their direction. A higher score means two movies share more similar content.
-cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+def evaluate_metrics(recommended_movies, reference_movie, movie_data, predicted_ratings, k=10):
+    # Relevant movies based on genres
+    relevant_genres = reference_movie["genres"]
+    relevant_movies = set(movie_data[movie_data["genres"].str.contains(relevant_genres, case=False, na=False)].index)
+    recommended_indices = set(recommended_movies.head(k).index)
 
-def get_recommendations(title, cosine_sim=cosine_sim):
-    # Check if the movie exists
-    if title not in mkc_merge['title'].values:
-        print(f"Error: Movie title '{title}' not found in the dataset.")
-        return []
+    # Metrics Calculation
+    precision = precisionAtK(recommended_indices, relevant_movies, k)
+    recall = recallAtK(recommended_indices, relevant_movies)
+    f1 = f1ScoreAtK(precision, recall)
+    map_score = meanAveragePrecision(recommended_indices, relevant_movies, k)
 
-    idx = mkc_merge[mkc_merge['title'] == title].index[0]
-    sim_scores = list(enumerate(cosine_sim[idx]))
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
-    sim_scores = sim_scores[1:11]
-    movie_indices = [i[0] for i in sim_scores]
-    return mkc_merge['title'].iloc[movie_indices]
+    # Generate pseudo-true ratings for MSE calculation (here based on similarity)
+    actual_ratings = [1 if idx in relevant_movies else 0 for idx in recommended_indices]
+    mse = mean_squared_error(actual_ratings, predicted_ratings[:len(actual_ratings)])
 
-movie = input('Please input a movie name for a recommendation: ')
-print(get_recommendations(movie))
+    print(f"\nPrecision @ {k}: {precision:.4f}")
+    print(f"Recall @ {k}: {recall:.4f}")
+    print(f"F1 Score @ {k}: {f1:.4f}")
+    print(f"Mean Average Precision @ {k}: {map_score:.4f}")
+    print(f"Mean Squared Error (MSE): {mse:.4f}")
+
+def precisionAtK(recommended_indices, relevant_movies, k):
+    relevant_at_k = recommended_indices.intersection(relevant_movies)
+    return len(relevant_at_k) / k if k > 0 else 0
+
+def recallAtK(recommended_indices, relevant_movies):
+    relevant_at_k = recommended_indices.intersection(relevant_movies)
+    return len(relevant_at_k) / len(relevant_movies) if len(relevant_movies) > 0 else 0
+
+def f1ScoreAtK(precision, recall):
+    return 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+def meanAveragePrecision(recommended_indices, relevant_movies, k):
+    average_precision = 0
+    relevant_count = 0
+    for i, idx in enumerate(recommended_indices, start=1):
+        if idx in relevant_movies:
+            relevant_count += 1
+            average_precision += relevant_count / i
+    return average_precision / len(relevant_movies) if len(relevant_movies) > 0 else 0
+
+# Run the content-based recommender
+if __name__ == "__main__":
+    movie_title = "Clueless"
+    filteringRecommender(movie_title)
