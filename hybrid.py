@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import mean_squared_error
-from collaborativefiltering import precisionAtK, recallAtK, f1ScoreAtK, meanAveragePrecision
+from collaborativeFiltering import precisionAtK, recallAtK, f1ScoreAtK, meanAveragePrecision
 
 def load_data():
     ratings = pd.read_csv("/Users/conneigh8/Documents/CPSC483_FALL2024/CPSC483_Project/MovieLens20M/rating.csv")
