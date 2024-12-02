@@ -22,7 +22,7 @@ def train_model(movie_data):
     similarity_matrix = cosine_similarity(feature_matrix)
     return similarity_matrix
 
-def filteringRecommender(movie_title, n_recommendations=10):
+def contentFilteringRecommender(movie_title, n_recommendations=10):
     movie_data = load_data()
     similarity_matrix = train_model(movie_data)
 
@@ -98,4 +98,4 @@ def meanAveragePrecision(recommended_indices, relevant_movies, k):
 # Run the content-based recommender
 if __name__ == "__main__":
     movie_title = "Clueless"
-    filteringRecommender(movie_title)
+    contentFilteringRecommender(movie_title)
