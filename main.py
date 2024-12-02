@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1oUjITBDPki7jZWTDHqKi44eE9Q2xaRrz
 """
 
-from collaborativefiltering import filteringRecommender
+from collaborativeFiltering import filteringRecommender
 from hybrid import hybrid_recommender, evaluate_hybrid_recommender, load_data
 
 def runRecommendation(choice):
