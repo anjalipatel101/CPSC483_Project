@@ -1,3 +1,6 @@
+#Content-Based Filtering (CBF)
+# Movie to Movie Recommendation (similar to Netflix search bar where one movie title is inputed and a collection of similar movies appear) 
+
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -14,43 +17,42 @@ def load_data():
     return movie_data
 
 def train_model(movie_data):
-    # Create a TF-IDF matrix for combined features
+    # Create a TF-IDF matrix for combined features (as designated above) 
     tfidf = TfidfVectorizer(stop_words="english")
     feature_matrix = tfidf.fit_transform(movie_data["combined_features"])
 
-    # Calculate the cosine similarity matrix
+    # Calculation: Cosine Similarity Matrix
     similarity_matrix = cosine_similarity(feature_matrix)
     return similarity_matrix
 
 def contentFilteringRecommender(movie_title, n_recommendations=10):
     movie_data = load_data()
     similarity_matrix = train_model(movie_data)
-
-    # Ensure the movie exists in the dataset
+    
     movie_indices = movie_data[movie_data["title"].str.contains(movie_title, case=False)].index
     if len(movie_indices) == 0:
         return f"Movie '{movie_title}' not found."
 
-    # Reference movie and similarity scores
+    # Reference movie & similarity scores (necessary for ranking)
     movie_index = movie_indices[0]
     reference_movie = movie_data.iloc[movie_index]
     similarity_scores = list(enumerate(similarity_matrix[movie_index]))
 
-    # Get top N recommendations
+    # Get top N recommendations after ranking is sorted
     similar_movies = sorted(similarity_scores, key=lambda x: x[1], reverse=True)[1:n_recommendations + 1]
     recommended_indices = [x[0] for x in similar_movies]
     similarity_values = [x[1] for x in similar_movies]
 
-    # Extract movie details
+    # Extract movie details (the details such as the title and genre listing as well as the calculated similarity score)
     recommended_movies = movie_data.iloc[recommended_indices].copy()
     recommended_movies["similarity_score"] = similarity_values
 
-    # Display recommendations
+    # Display result recommendations
     print(f"\nTop {n_recommendations} Movies Similar to '{reference_movie['title']}':\n")
     for rank, (_, row) in enumerate(recommended_movies.iterrows(), 1):
         print(f"{rank:4d} | {row['title']:40s} | {row['genres']:20s} | {row['similarity_score']:.4f}")
 
-    # Evaluate recommendations
+    # Evaluate recommendations on pre-defined metrics (used for all three models CF, CBF, and Hybrid) -> necessary for future analysis
     evaluate_metrics(recommended_movies, reference_movie, movie_data, similarity_values, n_recommendations)
 
 def evaluate_metrics(recommended_movies, reference_movie, movie_data, predicted_ratings, k=10):
