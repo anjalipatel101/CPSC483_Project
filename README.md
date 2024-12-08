@@ -1,7 +1,6 @@
 # CPSC483_Project: Movie Recommender System 
 
-Machine Learning Group Project
-Group Members: Anjali Patel, Amanda Shohdy, Connie Zhu 
+Machine Learning Group Project    ||    Group Members: Anjali Patel, Amanda Shohdy, Connie Zhu 
 _____________________________________________________________
 
 Summary: Recommender systems have become prevalent in our daily lives and are integral components to various online platforms. In the streaming industry, such techniques provide a greater user interaction experience. This paper presents three commonly used models: collaborative filtering, content-based filtering, and lastly, a hybrid model, all generating personalized movie recommendations. 
