@@ -23,10 +23,10 @@ def runRecommendation(choice):
     if (choice == 3):
         print("Enter your userId: ", end=' ')
         userId = int(input())
-        recommendations = hybrid_recommender(userId, n_recommendations=10)
-        print(recommendations[['movieId', 'title', 'genres']])
         ratings, movies = load_data()
-        evaluate_hybrid_recommender(userId, hybrid_recommender, ratings, n_recommendations=10)
+        recommendations = hybrid_recommender(userId, ratings, movies, n_recommendations=10)
+        print(recommendations[['movieId', 'title', 'genres']])
+        evaluate_hybrid_recommender(userId, ratings, movies, hybrid_recommender, n_recommendations=10)
 
 if __name__ == "__main__":
     choice = 1
