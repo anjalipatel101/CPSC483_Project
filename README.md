@@ -1,6 +1,6 @@
 # CPSC 483 Machine Learning Project: Movie Recommender System
 
-Group Members: Anjali Patel, Connie Zhu, Amanda Shody 
+Group Members: Anjali Patel, Connie Zhu, Amanda Shohdy 
 
 Fall 2024
 
