@@ -11,7 +11,7 @@ Recommender systems have become prevalent in our daily lives and are integral co
 
 As the dataset was too large, it was not able to be uploaded to GitHub.
 
-Please download the `rating.csv` dataset and ensure it is in the correct folder: https://www.kaggle.com/datasets/grouplens/movielens-20m-dataset/data?select=rating.csv
+Please download the `rating.csv` and `movie.csv` dataset and ensure it is in the correct folder: https://www.kaggle.com/datasets/grouplens/movielens-20m-dataset/data?select=rating.csv
 
 Ensure the path to the
 
