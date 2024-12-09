@@ -27,6 +27,6 @@ MovieLens 20M dataset: https://www.kaggle.com/datasets/grouplens/movielens-20m-d
 Using `movie.csv` and `rating.csv`:
 
 Recommendation Techniques:
-- Content-Based Filtering: Recommends movies based on such as titles and genres to recommend similar movies based on predicted content.
-- Collaborative Filtering: Recommends movies by analyzing user interaction patterns and preferences, leveraging the ratings of similar users to make recommendations
-- Hybrid Filtering: Combination of the two filtering techniques, content-based and collaborative, by combining recommendation scores, normalizing, and using weight.
+- **Content-Based Filtering**: Recommends movies based on such as titles and genres to recommend similar movies based on predicted content.
+- **Collaborative Filtering**: Recommends movies by analyzing user interaction patterns and preferences, leveraging the ratings of similar users to make recommendations
+- **Hybrid Filtering**: Combination of the two filtering techniques, content-based and collaborative, by combining recommendation scores, normalizing, and using weight.
