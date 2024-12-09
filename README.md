@@ -4,6 +4,8 @@ Group Members: Anjali Patel, Connie Zhu, Amanda Shohdy
 
 Fall 2024
 
+github: https://github.com/anjalipatel101/CPSC483_Project.git
+
 ---
 Recommender systems have become prevalent in our daily lives and are integral components to various online platforms. This repository contains the implementation of a movie recommendation system using the MovieLens 20M dataset. The project explores the following recommendation techniques and evaluates their effectiveness: content-based filtering, collaborative filtering, and a hybrid of both of the former methods.
 
